@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html version="-//W3C//DTD XHTML 1.1//EN"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xml:lang="en"
+>
+<head>
+    <title>Trend Search</title>
+
+<style type="text/css">
+/*<![CDATA[*/
+html { padding: 0; }
+body {
+padding: 0;
+margin: 0;
+font-family:Gill Sans, Arial, Helvetica, sans-serif;
+font-size: 12pt;
+color: #333;
+background-color: #FDFDFD;
+}
+#header {
+padding: 0;
+margin: 0;
+background-color: #ff8c00;
+color: #FFFFFF;
+border-bottom: 1px solid #AAA;
+}
+#header h1 {
+font-size: 16pt;
+font-weight: normal;
+text-align: left;
+vertical-align: middle;
+padding: 4px 8px 4px 8px;
+margin: 0px 0px 0px 0px;
+}
+#menu {
+margin-left: 8px;
+margin-right: 8px;
+margin-top: 0px;
+clear: right;
+float: right;
+}
+#intro,#main {
+margin-left: 8px;
+margin-right: 8px;
+}
+#help {
+margin-left: 8px;
+margin-right: 8px;
+width: 80%
+}
+#footer {
+width: 100%;
+float: left;
+clear: left;
+margin: 2em 0 0;
+padding-top: 0.7ex;
+border-top: 1px solid #AAA;
+font-size: 8pt;
+text-align: center;
+}
+fieldset {
+border: 0;
+padding: 0;
+margin: 0;
+}
+fieldset label {
+font-weight: normal;
+white-space: nowrap;
+font-size: 11pt;
+color: #000;
+}
+fieldset label.n {
+display: block;
+vertical-align: bottom;
+margin-top:5px;
+width: 160px;
+float:left;
+white-space: nowrap;
+}
+fieldset label.n:after { content: ":"; }
+fieldset label.n1 {
+display: block;
+vertical-align: bottom;
+margin-top:5px;
+width: 160px;
+float:left;
+white-space: nowrap;
+}
+fieldset label.ckb {
+width: 160px;
+font-weight: normal;
+font-size: 10pt;
+}
+fieldset label.ckb:after { content: ""; }
+fieldset textarea {
+width: 99%;
+font-family: monospace;
+font-size: 10pt;
+}
+#cxml {
+clear: both;
+display: block;
+}
+#savefs {
+clear: both;
+display: block;
+}
+span.info {
+font-size: 9pt;
+white-space: nowrap;
+height: 2em;
+}
+br { clear: both; }
+/*]]>*/
+</style>
+</head>
+<body onload="sparql_endpoint_init()">
+    <div id="header">
+	<h1>Visualization of Drug Target Information Using Semmantic Web <i>-beta-</i></h1>
+    </div>
+
+
+
+
+
+
+<title>Trend Search</title>
+
+<table>
+<tr bgcolor="lightgrey">
+<td align="center">
+<h4>Target Classification</h4>
+</td>
+<td>
+<form action="./gpcr.php" method="POST">
+  <input type="submit" name="query" value="7TM1">
+</form>
+</td>
+<td>
+<form action="./gpcr.php" method="POST">
+  <input type="submit" name="query" value="Kinase">
+</form>
+</td>
+<td>
+<form action="./gpcr.php" method="POST">
+  <input type="submit" name="query" value="Protease">
+</form>
+</td>
+</tr>
+
+<tr bgcolor="lightgrey">
+<td align="center">
+<h4>Target Trend Search</h4>
+</td>
+<td>
+<form action="./molecule.php" method="POST">
+  <input type="submit" name="query" value="7TM1">
+</form>
+</td>
+<td>
+<form action="./molecule.php" method="POST">
+  <input type="submit" name="query" value="Kinase">
+</form>
+</td>
+<td>
+<form action="./molecule.php" method="POST">
+  <input type="submit" name="query" value="Protease">
+</form>
+</td>
+</tr>
+</table>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
+
+var margin = {top: 30, right: 30, bottom: 200, left: 80},
+//var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 600 - margin.top - margin.bottom;
+
+var x = d3.scale.ordinal()
+    .rangeRoundBands([0, width], .1);
+
+var y = d3.scale.linear()
+    .rangeRound([height, 0]);
+
+var color = d3.scale.ordinal()
+    .range(["#00ff00", "#20b2aa", "#8a89a6", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+    //.range(["#00ff00", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+    //.range(["#ff4500", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+    //.range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+
+var xAxis = d3.svg.axis()
+    .scale(x)
+    .orient("bottom");
+
+var yAxis = d3.svg.axis()
+    .scale(y)
+    .orient("left")
+//    .tickFormat(d3.format(".2s"));
+
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+d3.csv("data.csv", function(error, data) {
+  color.domain(d3.keys(data[0]).filter(function(key) { return key !== "Target"; }));
+
+  data.forEach(function(d) {
+    var y0 = 0;
+    d.ages = color.domain().map(function(name) { return {name: name, y0: y0, y1: y0 += +d[name]}; });
+    d.total = d.ages[d.ages.length - 1].y1;
+  });
+
+  data.sort(function(a, b) { return b.total - a.total; });
+
+  x.domain(data.map(function(d) { return d.Target; }));
+  y.domain([0, d3.max(data, function(d) { return d.total; })]);
+
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+        .selectAll("text")
+            .style("text-anchor", "end")
+            .attr("dx", "-.8em")
+            .attr("dy", ".15em")
+            .attr("transform", function(d) {
+                return "rotate(-65)"
+               });
+
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Compounds");
+
+  var state = svg.selectAll(".state")
+      .data(data)
+    .enter().append("g")
+      .attr("class", "g")
+      .attr("transform", function(d) { return "translate(" + x(d.Target) + ",0)"; });
+
+  state.selectAll("rect")
+      .data(function(d) { return d.ages; })
+    .enter().append("rect")
+      .attr("width", x.rangeBand())
+      .attr("y", function(d) { return y(d.y1); })
+      .attr("height", function(d) { return y(d.y0) - y(d.y1); })
+      .style("fill", function(d) { return color(d.name); });
+
+  var legend = svg.selectAll(".legend")
+      .data(color.domain().slice().reverse())
+    .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+  legend.append("rect")
+      .attr("x", width - 18)
+      .attr("width", 18)
+      .attr("height", 18)
+      .style("fill", color);
+
+  legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 9)
+      .attr("dy", ".35em")
+      .style("text-anchor", "end")
+      .text(function(d) { return d; });
+
+});
+</script>
+
+
+
+
+
+
+<hr>
+<h2>&nbsp Sunburst Trees of Protein Classification</h2>
+<p>&nbsp  A zoomable sunburst tree for visualizing hierarchical data of protein family classification is developed with <a href="https://www.ebi.ac.uk/chembl/">ChEMBLdb</a> using
+ <a href="https://github.com/egonw/chembl.rdf">ChEMBL-RDF</a>, <a href="http://d3js.org/">D3.js</a> and <a href="http://www.jasondavies.com/">cool examples</a>.
+
+<h2>&nbsp Trend of Drug Targets</h2>
+<p>&nbsp A graph is for visualizing number of compounds or activities per human protein target from <a href="https://www.ebi.ac.uk/chembl/">ChEMBLdb</a> using 
+ <a href="https://github.com/egonw/chembl.rdf">ChEMBL-RDF</a>, <a href="http://d3js.org/">D3.js</a>.</p>
+
+<h2>&nbsp Acknowledgements</h2>
+<p>&nbsp These web tools are developed by Kazuyoshi Ikeda, and thanks to Tore Eriksson and Mitsuteru Nakao for very useful discussions through BioHackathon2013. And also thanks to all BH2013 members.</p>
+
+<p class="copyright">&nbsp &copy; <a href="">Kazuyoshi Ikeda</a> 2013.
+</body>
+</html>
